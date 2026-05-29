@@ -33,6 +33,7 @@
             textBox2 = new TextBox();
             button1 = new Button();
             button2 = new Button();
+            button3 = new Button();
             textBox3 = new TextBox();
             label2 = new Label();
             checkBox1 = new CheckBox();
@@ -87,9 +88,19 @@
             button2.Text = "TEST";
             button2.UseVisualStyleBackColor = true;
             button2.Click += Button2_Click;
-            // 
+            //
+            // button3
+            //
+            button3.Location = new Point(310, 64);
+            button3.Name = "button3";
+            button3.Size = new Size(150, 23);
+            button3.TabIndex = 8;
+            button3.Text = "対応表(JSON)を編集";
+            button3.UseVisualStyleBackColor = true;
+            button3.Click += button3_Click;
+            //
             // textBox3
-            // 
+            //
             textBox3.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             textBox3.Location = new Point(56, 35);
             textBox3.Name = "textBox3";
@@ -122,6 +133,7 @@
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(705, 450);
             Controls.Add(checkBox1);
+            Controls.Add(button3);
             Controls.Add(textBox3);
             Controls.Add(label2);
             Controls.Add(button2);
@@ -145,5 +157,6 @@
         private TextBox textBox3;
         private Label label2;
         private CheckBox checkBox1;
+        private Button button3;
     }
 }

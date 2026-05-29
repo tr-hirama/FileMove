@@ -51,6 +51,7 @@ namespace WinFormsApp1
 
         private void button1_Click(object sender, EventArgs e)
         {
+            LoadAddList();
             string[] allFiles = Directory.GetFiles(fromFolder);
 
             string[] names = Directory.GetFiles(textBox1.Text, "*.ts.program.txt");
@@ -334,6 +335,26 @@ namespace WinFormsApp1
 
         }
 
+
+        // anime.json を既定アプリで開いて編集できるようにする
+        private void button3_Click(object sender, EventArgs e)
+        {
+            string jsonPath = Path.Combine(AppContext.BaseDirectory, "anime.json");
+            if (!System.IO.File.Exists(jsonPath))
+            {
+                MessageBox.Show("anime.json が見つかりません: " + jsonPath);
+                return;
+            }
+            try
+            {
+                var psi = new System.Diagnostics.ProcessStartInfo(jsonPath) { UseShellExecute = true };
+                System.Diagnostics.Process.Start(psi);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("編集アプリの起動に失敗: " + ex.Message);
+            }
+        }
 
         private void Button2_Click(object sender, EventArgs e)
         {
