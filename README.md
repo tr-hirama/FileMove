@@ -74,7 +74,8 @@ dotnet run --project WinFormsApp1/fileMove.csproj
 ```
 fileMove.sln                         ソリューション
 WinFormsApp1/
-├── fileMove.csproj                  プロジェクト定義（.NET6 / AngleSharp）
+├── fileMove.csproj                  プロジェクト定義（.NET10 / AngleSharp）
+├── anime.json                       タイトル→tid 対応表（外部データ。exe隣へコピー）
 ├── Program.cs                       エントリポイント（Application.Run(new Form1())）
 ├── Form1.cs                         本体ロジック（タイトル抽出・tid判定・ファイル移動）
 ├── Form1.Designer.cs                画面定義（UTF-8。UI部品とイベント結線）
@@ -86,10 +87,13 @@ WinFormsApp1/
 
 ## データソースとロジックの要点
 
-- **`anime` 構造体**: `title`（番組名）と `tid`（4桁ID）のペア。
-- **`addList`**（`Form1.cs`内）: 約180件のタイトル→tidをハードコードした静的フォールバック表。
-  スクレイピングで取れない/誤判定するタイトルを補う目的。`tid = "0000"` は
-  「ID未確定だがフォルダ名 `0000_タイトル` に直接振り分ける」特例として扱われる。
+- **`Anime` 構造体**: `title`（番組名）と `tid`（4桁ID）のペア。
+- **`addList`**: タイトル→tid の静的フォールバック表（233件）。スクレイピングで
+  取れない/誤判定するタイトルを補う目的。**`anime.json`（外部ファイル）から起動時に読み込む**
+  （`LoadAddList()`）。`anime.json` は UTF-8、`[{"title":"...","tid":"...."}, ...]` 形式で、
+  ビルド時に exe と同じ出力フォルダへコピーされる（`CopyToOutputDirectory`）。
+  → **再コンパイルなしで `anime.json` を編集するだけで対応表を更新できる。**
+  `tid = "0000"` は「ID未確定だがフォルダ名 `0000_タイトル` に直接振り分ける」特例。
 - **タイトル正規化**: ファイル名の表記ゆれ（局名・全角記号・各種タグ）を `Replace` の連鎖で吸収。
   ここが判定精度のキモであり、最も壊れやすい/メンテが必要な箇所。
 - **部分一致照合**: タイトル全長から1文字ずつ削って `Contains` で照合するため、
