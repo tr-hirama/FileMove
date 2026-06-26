@@ -52,7 +52,7 @@ namespace WinFormsApp1
         private void button1_Click(object sender, EventArgs e)
         {
             LoadAddList();
-            string[] allFiles = Directory.GetFiles(fromFolder);
+            string[] allFiles = Directory.GetFiles(textBox1.Text);
 
             string[] names = Directory.GetFiles(textBox1.Text, "*.ts.program.txt");
 
