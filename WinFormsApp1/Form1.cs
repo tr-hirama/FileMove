@@ -225,11 +225,6 @@ namespace WinFormsApp1
                             textBox2.Text += tid + "_" + title.Substring(0, i) + Environment.NewLine;
                             break;
                         }
-                        else if (rc > 0)
-                        {
-                            textBox2.Text += "Å~" + title.Substring(0, i) + Environment.NewLine;
-                            break;
-                        }
                     }
                 }
             }
