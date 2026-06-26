@@ -114,6 +114,15 @@ namespace WinFormsApp1
 
                     int cc = title.Length;
 
+                    string tidF = TidFromProgramFile(name, title);
+                    if (!string.IsNullOrEmpty(tidF))
+                    {
+                        textBox2.AppendText(" file->tid " + tidF + Environment.NewLine);
+                        if (!checkBox1.Checked) MoveByTid(tidF, mp4Path, cutTSPath, name);
+                        continue;
+                    }
+
+
                     for (int i = cc; i > 0; i--)
                     {
                         int rc = 0;
@@ -394,6 +403,81 @@ namespace WinFormsApp1
             using var dlg = new FolderBrowserDialog { SelectedPath = textBox1.Text };
             if (dlg.ShowDialog() == DialogResult.OK)
                 textBox1.Text = dlg.SelectedPath;
+        }
+
+        // ---- added: resolve tid from program.txt broadcast time via syoboi ----
+        static readonly System.Net.Http.HttpClient _http = MakeHttp();
+        static System.Net.Http.HttpClient MakeHttp()
+        {
+            var h = new System.Net.Http.HttpClient();
+            h.Timeout = TimeSpan.FromSeconds(12);
+            h.DefaultRequestHeaders.Add("User-Agent", "FileMove/1.0");
+            return h;
+        }
+
+        // Read the broadcast start time from program.txt line 1, query syoboi ProgLookup,
+        // and return a 4-digit tid. If several programs share that minute, disambiguate by
+        // normalizedTitle. Returns "" when undecidable (caller falls back to the fuzzy match).
+        string TidFromProgramFile(string programTxtPath, string normalizedTitle)
+        {
+            try
+            {
+                var enc = System.Text.Encoding.GetEncoding(932);
+                string content = enc.GetString(System.IO.File.ReadAllBytes(programTxtPath));
+                string firstLine = content.Split((char)10)[0];
+                var m = System.Text.RegularExpressions.Regex.Match(firstLine, "(\\d{4})/(\\d{2})/(\\d{2}).*?(\\d{1,2}):(\\d{2})");
+                if (!m.Success) return "";
+                var start = new DateTime(int.Parse(m.Groups[1].Value), int.Parse(m.Groups[2].Value), int.Parse(m.Groups[3].Value),
+                                         int.Parse(m.Groups[4].Value), int.Parse(m.Groups[5].Value), 0);
+                string range = start.AddMinutes(-1).ToString("yyyyMMdd_HHmmss") + "-" + start.AddMinutes(1).ToString("yyyyMMdd_HHmmss");
+                string progXml = _http.GetStringAsync("https://cal.syoboi.jp/db.php?Command=ProgLookup&Range=" + range).GetAwaiter().GetResult();
+                var doc = XDocument.Parse(progXml);
+                string hhmm = start.ToString("HH:mm");
+                var cands = doc.Descendants("ProgItem")
+                    .Where(p => DateTime.TryParse((string?)p.Element("StTime"), out var st) && st.ToString("HH:mm") == hhmm)
+                    .Select(p => (string?)p.Element("TID"))
+                    .Where(t => !string.IsNullOrEmpty(t)).Select(t => t!).Distinct().ToList();
+                if (cands.Count == 0) return "";
+                if (cands.Count == 1) return int.Parse(cands[0]).ToString("0000");
+                string titleXml = _http.GetStringAsync("https://cal.syoboi.jp/db.php?Command=TitleLookup&TID=" + string.Join(",", cands)).GetAwaiter().GetResult();
+                var tdoc = XDocument.Parse(titleXml);
+                string key = NormForMatch(normalizedTitle);
+                var hits = tdoc.Descendants("TitleItem")
+                    .Where(t => { string st = NormForMatch((string?)t.Element("Title")); return key.Length > 0 && st.Length > 0 && (st.Contains(key) || key.Contains(st)); })
+                    .Select(t => (string?)t.Element("TID"))
+                    .Where(t => !string.IsNullOrEmpty(t)).Select(t => t!).Distinct().ToList();
+                if (hits.Count == 1) return int.Parse(hits[0]).ToString("0000");
+                return "";
+            }
+            catch { return ""; }
+        }
+
+        // Light title-compare key: fullwidth digits/letters -> ascii, drop spaces, lowercase.
+        static string NormForMatch(string? s)
+        {
+            if (string.IsNullOrEmpty(s)) return "";
+            var sb = new System.Text.StringBuilder(s.Length);
+            foreach (char c in s)
+            {
+                char x = c;
+                if (x >= (char)0xFF10 && x <= (char)0xFF19) x = (char)('0' + (x - 0xFF10));
+                else if (x >= (char)0xFF21 && x <= (char)0xFF3A) x = (char)('A' + (x - 0xFF21));
+                else if (x >= (char)0xFF41 && x <= (char)0xFF5A) x = (char)('a' + (x - 0xFF41));
+                if (char.IsWhiteSpace(x)) continue;
+                sb.Append(char.ToLowerInvariant(x));
+            }
+            return sb.ToString();
+        }
+
+        // Move using a syoboi-resolved tid (same rule as the main loop: only when exactly one tid* folder).
+        void MoveByTid(string tid, string mp4Path, string cutTSPath, string name)
+        {
+            string[] toFolders = Directory.GetDirectories(textBox3.Text, tid + "*");
+            if (toFolders.Length != 1) { textBox2.AppendText("  (no unique folder for " + tid + ")" + Environment.NewLine); return; }
+            textBox2.AppendText(toFolders[0] + Environment.NewLine);
+            if (mp4Path != "") FileSystem.MoveFile(mp4Path, Path.Combine(toFolders[0], Path.GetFileName(mp4Path)), UIOption.AllDialogs);
+            if (cutTSPath != "") FileSystem.MoveFile(cutTSPath, Path.Combine(toFolders[0], Path.GetFileName(cutTSPath)), UIOption.AllDialogs);
+            if (name != "") FileSystem.MoveFile(name, Path.Combine(toFolders[0], Path.GetFileName(name)), UIOption.AllDialogs);
         }
 
         private void buttonBrowseTo_Click(object sender, EventArgs e)
