@@ -61,6 +61,8 @@ namespace WinFormsApp1
                 string filePath = name.Replace(".ts.program.txt", "");
                 string fileName = Path.GetFileName(filePath);
 
+                if (fileName.Length < 19) { textBox2.AppendText("skip (name too short): " + fileName + Environment.NewLine); continue; }
+
                 string title = fileName.Substring(19).Replace("[Ｓ]", "").Replace("[字]", "").Replace("[デ]", "").Replace("[終]", "").Replace("[再]", "").Replace("[新]", "").Replace("[解]", "").Replace("[多]", "").Replace("アニメ・", "").Replace("アニメＡ・", "").Replace("アニメ『", "")
                     .Replace("[SS]", "").Replace("【新作】", "").Replace("【新作映画公開記念】", "").Replace("アニメA・", "").Replace("日５『", "").Replace("　", " ").Replace("日５「", "").Replace("　", " ")
                     .Replace("＜アニメギルド＞", "").Replace("＜アニおび＞", "").Replace("アニメの神様『", "").Replace("アニメA・", "").Replace("日５『", "").Replace("　", " ")
@@ -263,6 +265,8 @@ namespace WinFormsApp1
 
 
             // この辺で色々設定する
+            try
+            {
             var config = Configuration.Default
                 .WithDefaultLoader(); // LoaderはデフォではいないのでOpenAsyncする場合につける
 
@@ -281,7 +285,9 @@ namespace WinFormsApp1
             {
                 string title = item.QuerySelector("a")?.InnerHtml ?? "";
                 string tidA = item.InnerHtml.Replace("<a href=\"/tid/", "");
-                string tidB = tidA.Substring(0, tidA.IndexOf("\">"));
+                int idx = tidA.IndexOf("\">");
+                if (idx < 0) continue;
+                string tidB = tidA.Substring(0, idx);
                 string tid = int.Parse(tidB).ToString("0000");
 
                 Anime anime = new Anime(title, tid);
@@ -300,7 +306,9 @@ namespace WinFormsApp1
             {
                 string title = item.QuerySelector("a")?.InnerHtml ?? "";
                 string tidA = item.InnerHtml.Replace("<a href=\"/tid/", "");
-                string tidB = tidA.Substring(0, tidA.IndexOf("\">"));
+                int idx = tidA.IndexOf("\">");
+                if (idx < 0) continue;
+                string tidB = tidA.Substring(0, idx);
                 string tid = int.Parse(tidB).ToString("0000");
 
                 Anime anime = new Anime(title, tid);
@@ -318,7 +326,9 @@ namespace WinFormsApp1
             {
                 string title = item.QuerySelector("a")?.InnerHtml ?? "";
                 string tidA = item.InnerHtml.Replace("<a href=\"/tid/", "");
-                string tidB = tidA.Substring(0, tidA.IndexOf("\">"));
+                int idx = tidA.IndexOf("\">");
+                if (idx < 0) continue;
+                string tidB = tidA.Substring(0, idx);
                 string tid = int.Parse(tidB).ToString("0000");
 
                 Anime anime = new Anime(title, tid);
@@ -328,6 +338,11 @@ namespace WinFormsApp1
             }
 
             textBox2.AppendText("しょぼいカレンダータイトル一覧読込完了：" + count.ToString() + Environment.NewLine);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("getAnimeList failed: " + ex.Message);
+            }
 
         }
 
