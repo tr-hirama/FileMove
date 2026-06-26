@@ -75,14 +75,14 @@ namespace WinFormsApp1
                     .Replace("［新］", "").Replace(" AnichU", "").Replace("映画", "").Replace("－", "-").Replace("テレビアニメ「", "").Replace("アニメ「", "").Replace("）", ")").Replace("．", ".").Replace("劇場版", "")
                     .Replace("『", "").Replace("』", "").Replace("テレビアニメ", "").Replace("「", "").Replace("」", "").Replace("TVアニメ", "").Replace("映画公開記念", "").Replace("．", ".").Replace("アニメ「", "").Replace("TVシリーズ", "");
 
-                if (title.Count() > 5 && title.Substring(0, 4) == "アニメ ")
+                if (title.Length > 5 && title.Substring(0, 4) == "アニメ ")
                 {
                     title = title.Substring(4);
                 }
 
                 title = title.Trim();
 
-                textBox2.Text += title + Environment.NewLine;
+                textBox2.AppendText(title + Environment.NewLine);
 
                 int fnCount = 0;
                 string mp4Path = string.Empty;
@@ -100,7 +100,7 @@ namespace WinFormsApp1
                         mp4Path = str;
                     }
 
-                    else if (Path.GetExtension(str).ToLower() == ".ts" && str.IndexOf("_cut.ts") > 0)
+                    else if (Path.GetExtension(str).ToLower() == ".ts" && str.IndexOf("_cut.ts") >= 0)
                     {
                         cutTSPath = str;
                     }
@@ -108,33 +108,34 @@ namespace WinFormsApp1
 
                 if (mp4Path != "" || cutTSPath != "")
                 {
-                    textBox2.Text += fnCount.ToString() + " : " + mp4Path + " : " + cutTSPath + Environment.NewLine;
+                    textBox2.AppendText(fnCount.ToString() + " : " + mp4Path + " : " + cutTSPath + Environment.NewLine);
 
                     int cc = title.Length;
 
                     for (int i = cc; i > 0; i--)
                     {
                         int rc = 0;
+                        string prefix = title.Substring(0, i);
 
-                        var result1 = addList.Where(x => x.title.Contains(title.Substring(0, i)));
+                        var result1 = addList.Where(x => x.title.Contains(prefix));
                         string tid = string.Empty;
 
                         foreach (Anime anime in result1)
                         {
                             tid = anime.tid;
-                            textBox2.Text += " ※ " + anime.tid + Environment.NewLine;
+                            textBox2.AppendText(" ※ " + anime.tid + Environment.NewLine);
 
                             rc = 1;
                         }
 
                         if (string.IsNullOrWhiteSpace(tid))
                         {
-                            var result2 = Animes.Where(x => x.title.Contains(title.Substring(0, i)));
+                            var result2 = Animes.Where(x => x.title.Contains(prefix));
 
                             foreach (Anime anime in result2)
                             {
                                 tid = anime.tid;
-                                textBox2.Text += " ※ " + anime.tid + Environment.NewLine;
+                                textBox2.AppendText(" ※ " + anime.tid + Environment.NewLine);
 
                                 rc = 1;
                             }
@@ -145,7 +146,7 @@ namespace WinFormsApp1
                         {
                             if (checkBox1.Checked)
                             {
-                                textBox2.Text += tid + "_" + title.Substring(0, i) + Environment.NewLine;
+                                textBox2.AppendText(tid + "_" + prefix + Environment.NewLine);
                                 break;
                             }
 
@@ -153,7 +154,7 @@ namespace WinFormsApp1
 
                             if (toFolders.Length == 1)
                             {
-                                textBox2.Text += toFolders[0] + Environment.NewLine;
+                                textBox2.AppendText(toFolders[0] + Environment.NewLine);
 
                                 if (mp4Path != "")
                                 {
@@ -186,7 +187,7 @@ namespace WinFormsApp1
                             }
                             else if (tid == "0000")
                             {
-                                toFolders = Directory.GetDirectories(textBox3.Text, tid + "_" + title.Substring(0, i));
+                                toFolders = Directory.GetDirectories(textBox3.Text, tid + "_" + prefix);
 
                                 if(toFolders.Length == 0) { break; }
 
@@ -222,7 +223,7 @@ namespace WinFormsApp1
                                 }
                             }
 
-                            textBox2.Text += tid + "_" + title.Substring(0, i) + Environment.NewLine;
+                            textBox2.AppendText(tid + "_" + prefix + Environment.NewLine);
                             break;
                         }
                     }
@@ -281,7 +282,7 @@ namespace WinFormsApp1
                 string title = item.QuerySelector("a")?.InnerHtml ?? "";
                 string tidA = item.InnerHtml.Replace("<a href=\"/tid/", "");
                 string tidB = tidA.Substring(0, tidA.IndexOf("\">"));
-                string tid = Int16.Parse(tidB).ToString("0000");
+                string tid = int.Parse(tidB).ToString("0000");
 
                 Anime anime = new Anime(title, tid);
                 Animes.Add(anime);
@@ -300,7 +301,7 @@ namespace WinFormsApp1
                 string title = item.QuerySelector("a")?.InnerHtml ?? "";
                 string tidA = item.InnerHtml.Replace("<a href=\"/tid/", "");
                 string tidB = tidA.Substring(0, tidA.IndexOf("\">"));
-                string tid = Int16.Parse(tidB).ToString("0000");
+                string tid = int.Parse(tidB).ToString("0000");
 
                 Anime anime = new Anime(title, tid);
                 Animes.Add(anime);
@@ -318,7 +319,7 @@ namespace WinFormsApp1
                 string title = item.QuerySelector("a")?.InnerHtml ?? "";
                 string tidA = item.InnerHtml.Replace("<a href=\"/tid/", "");
                 string tidB = tidA.Substring(0, tidA.IndexOf("\">"));
-                string tid = Int16.Parse(tidB).ToString("0000");
+                string tid = int.Parse(tidB).ToString("0000");
 
                 Anime anime = new Anime(title, tid);
                 Animes.Add(anime);
@@ -326,7 +327,7 @@ namespace WinFormsApp1
                 count++;
             }
 
-            textBox2.Text += "しょぼいカレンダータイトル一覧読込完了：" + count.ToString() + Environment.NewLine;
+            textBox2.AppendText("しょぼいカレンダータイトル一覧読込完了：" + count.ToString() + Environment.NewLine);
 
         }
 
