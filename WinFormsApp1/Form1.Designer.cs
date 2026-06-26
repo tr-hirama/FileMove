@@ -37,6 +37,8 @@
             textBox3 = new TextBox();
             label2 = new Label();
             checkBox1 = new CheckBox();
+            buttonBrowseFrom = new Button();
+            buttonBrowseTo = new Button();
             SuspendLayout();
             // 
             // label1
@@ -49,11 +51,11 @@
             label1.Text = "コピー元";
             // 
             // textBox1
-            // 
+            //
             textBox1.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             textBox1.Location = new Point(56, 6);
             textBox1.Name = "textBox1";
-            textBox1.Size = new Size(638, 23);
+            textBox1.Size = new Size(600, 23);
             textBox1.TabIndex = 1;
             textBox1.TextChanged += textBox1_TextChanged;
             // 
@@ -99,17 +101,39 @@
             button3.UseVisualStyleBackColor = true;
             button3.Click += button3_Click;
             //
+            // buttonBrowseFrom
+            //
+            buttonBrowseFrom.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            buttonBrowseFrom.Location = new Point(662, 6);
+            buttonBrowseFrom.Name = "buttonBrowseFrom";
+            buttonBrowseFrom.Size = new Size(31, 23);
+            buttonBrowseFrom.TabIndex = 9;
+            buttonBrowseFrom.Text = "...";
+            buttonBrowseFrom.UseVisualStyleBackColor = true;
+            buttonBrowseFrom.Click += buttonBrowseFrom_Click;
+            //
             // textBox3
             //
             textBox3.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             textBox3.Location = new Point(56, 35);
             textBox3.Name = "textBox3";
-            textBox3.Size = new Size(638, 23);
+            textBox3.Size = new Size(600, 23);
             textBox3.TabIndex = 6;
             textBox3.TextChanged += textBox3_TextChanged;
-            // 
+            //
+            // buttonBrowseTo
+            //
+            buttonBrowseTo.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            buttonBrowseTo.Location = new Point(662, 35);
+            buttonBrowseTo.Name = "buttonBrowseTo";
+            buttonBrowseTo.Size = new Size(31, 23);
+            buttonBrowseTo.TabIndex = 10;
+            buttonBrowseTo.Text = "...";
+            buttonBrowseTo.UseVisualStyleBackColor = true;
+            buttonBrowseTo.Click += buttonBrowseTo_Click;
+            //
             // label2
-            // 
+            //
             label2.AutoSize = true;
             label2.Location = new Point(12, 38);
             label2.Name = "label2";
@@ -132,6 +156,8 @@
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(705, 450);
+            Controls.Add(buttonBrowseTo);
+            Controls.Add(buttonBrowseFrom);
             Controls.Add(checkBox1);
             Controls.Add(button3);
             Controls.Add(textBox3);
@@ -158,5 +184,7 @@
         private Label label2;
         private CheckBox checkBox1;
         private Button button3;
+        private Button buttonBrowseFrom;
+        private Button buttonBrowseTo;
     }
 }

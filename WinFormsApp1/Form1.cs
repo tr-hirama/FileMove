@@ -377,5 +377,19 @@ namespace WinFormsApp1
                 checkBox1 .Checked = true;
             }
         }
+
+        private void buttonBrowseFrom_Click(object sender, EventArgs e)
+        {
+            using var dlg = new FolderBrowserDialog { SelectedPath = textBox1.Text };
+            if (dlg.ShowDialog() == DialogResult.OK)
+                textBox1.Text = dlg.SelectedPath;
+        }
+
+        private void buttonBrowseTo_Click(object sender, EventArgs e)
+        {
+            using var dlg = new FolderBrowserDialog { SelectedPath = textBox3.Text };
+            if (dlg.ShowDialog() == DialogResult.OK)
+                textBox3.Text = dlg.SelectedPath;
+        }
     }
 }
