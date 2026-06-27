@@ -373,7 +373,7 @@ namespace WinFormsApp1
             }
             try
             {
-                var psi = new System.Diagnostics.ProcessStartInfo(jsonPath) { UseShellExecute = true };
+                var psi = new System.Diagnostics.ProcessStartInfo("notepad.exe", "\"" + jsonPath + "\"") { UseShellExecute = true };
                 System.Diagnostics.Process.Start(psi);
             }
             catch (Exception ex)
