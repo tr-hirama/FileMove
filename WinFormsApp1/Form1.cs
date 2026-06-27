@@ -247,6 +247,21 @@ namespace WinFormsApp1
                 }
             }
 
+            // ---- MP4 only (no program.txt): resolve tid from the filename's broadcast time and move ----
+            string[] mp4Only = Directory.GetFiles(textBox1.Text, "*.mp4");
+            foreach (string mp4 in mp4Only)
+            {
+                string mbase = Path.GetFileNameWithoutExtension(mp4);
+                if (System.IO.File.Exists(Path.Combine(textBox1.Text, mbase + ".ts.program.txt"))) continue;
+                if (mbase.Length < 19) { textBox2.AppendText("~ˆÚ“®•s‰Â " + mbase + " : –¼‘O‚ª’Z‚¢" + Environment.NewLine); continue; }
+                string mtitle = mbase.Substring(19);
+                textBox2.AppendText("[MP4‚Ì‚Ý] " + mtitle + Environment.NewLine);
+                string mtid = TidFromFilenameTime(mbase, mtitle);
+                if (string.IsNullOrEmpty(mtid)) { textBox2.AppendText("~ˆÚ“®•s‰Â " + mtitle + " : tid‚ð“Á’è‚Å‚«‚È‚¢(MP4‚Ì‚Ý)" + Environment.NewLine); continue; }
+                textBox2.AppendText(" file->tid " + mtid + Environment.NewLine);
+                if (!checkBox1.Checked) MoveByTid(mtid, mp4, "", "");
+            }
+
 
         }
 
@@ -435,6 +450,18 @@ namespace WinFormsApp1
                 if (!m.Success) return "";
                 var start = new DateTime(int.Parse(m.Groups[1].Value), int.Parse(m.Groups[2].Value), int.Parse(m.Groups[3].Value),
                                          int.Parse(m.Groups[4].Value), int.Parse(m.Groups[5].Value), 0);
+                return TidFromBroadcastTime(start, normalizedTitle);
+            }
+            catch { return ""; }
+        }
+
+        // Light title-compare key: fullwidth digits/letters -> ascii, drop spaces, lowercase.
+        // Shared: resolve the 4-digit tid for a broadcast start time via syoboi ProgLookup,
+        // disambiguating by normalizedTitle when several programs share that minute.
+        string TidFromBroadcastTime(DateTime start, string normalizedTitle)
+        {
+            try
+            {
                 string range = start.AddMinutes(-1).ToString("yyyyMMdd_HHmmss") + "-" + start.AddMinutes(1).ToString("yyyyMMdd_HHmmss");
                 string progXml = _http.GetStringAsync("https://cal.syoboi.jp/db.php?Command=ProgLookup&Range=" + range).GetAwaiter().GetResult();
                 var doc = XDocument.Parse(progXml);
@@ -458,7 +485,14 @@ namespace WinFormsApp1
             catch { return ""; }
         }
 
-        // Light title-compare key: fullwidth digits/letters -> ascii, drop spaces, lowercase.
+        // Resolve tid from a recorder filename whose first 12 chars are yyyyMMddHHmm.
+        string TidFromFilenameTime(string fileNameBase, string normalizedTitle)
+        {
+            if (fileNameBase.Length < 12) return "";
+            if (!DateTime.TryParseExact(fileNameBase.Substring(0, 12), "yyyyMMddHHmm",
+                    System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var start)) return "";
+            return TidFromBroadcastTime(start, normalizedTitle);
+        }
         static string NormForMatch(string? s)
         {
             if (string.IsNullOrEmpty(s)) return "";
