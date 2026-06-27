@@ -108,6 +108,8 @@ namespace WinFormsApp1
                     }
                 }
 
+                if (mp4Path == "" && cutTSPath == "") { textBox2.AppendText("×移動不可 " + title + " : 動画(.mp4/_cut.ts)が見つからない" + Environment.NewLine); continue; }
+
                 if (mp4Path != "" || cutTSPath != "")
                 {
                     textBox2.AppendText(fnCount.ToString() + " : " + mp4Path + " : " + cutTSPath + Environment.NewLine);
@@ -123,6 +125,7 @@ namespace WinFormsApp1
                     }
 
 
+                    bool resolved = false;
                     for (int i = cc; i > 0; i--)
                     {
                         int rc = 0;
@@ -155,6 +158,7 @@ namespace WinFormsApp1
 
                         if (rc == 1)
                         {
+                            resolved = true;
                             if (checkBox1.Checked)
                             {
                                 textBox2.AppendText(tid + "_" + prefix + Environment.NewLine);
@@ -162,6 +166,7 @@ namespace WinFormsApp1
                             }
 
                             string[] toFolders = Directory.GetDirectories(textBox3.Text, tid + "*");
+                            if (toFolders.Length != 1 && tid != "0000") { textBox2.AppendText("×移動不可 " + title + " : 移動先フォルダ " + tid + "* が " + toFolders.Length + "件" + Environment.NewLine); }
 
                             if (toFolders.Length == 1)
                             {
@@ -238,6 +243,7 @@ namespace WinFormsApp1
                             break;
                         }
                     }
+                    if (!resolved) { textBox2.AppendText("×移動不可 " + title + " : tidを特定できない" + Environment.NewLine); }
                 }
             }
 
@@ -473,7 +479,7 @@ namespace WinFormsApp1
         void MoveByTid(string tid, string mp4Path, string cutTSPath, string name)
         {
             string[] toFolders = Directory.GetDirectories(textBox3.Text, tid + "*");
-            if (toFolders.Length != 1) { textBox2.AppendText("  (no unique folder for " + tid + ")" + Environment.NewLine); return; }
+            if (toFolders.Length != 1) { textBox2.AppendText("×移動不可 tid=" + tid + " : 移動先フォルダ " + tid + "* が " + toFolders.Length + "件" + Environment.NewLine); return; }
             textBox2.AppendText(toFolders[0] + Environment.NewLine);
             if (mp4Path != "") FileSystem.MoveFile(mp4Path, Path.Combine(toFolders[0], Path.GetFileName(mp4Path)), UIOption.AllDialogs);
             if (cutTSPath != "") FileSystem.MoveFile(cutTSPath, Path.Combine(toFolders[0], Path.GetFileName(cutTSPath)), UIOption.AllDialogs);
